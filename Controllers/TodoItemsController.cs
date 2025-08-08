@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
+using Dapper;
 using TodoApi.Models;
 
 namespace TodoApi.Controllers;
@@ -8,20 +9,21 @@ namespace TodoApi.Controllers;
 [ApiController]
 public class TodoItemsController : ControllerBase
 {
-    private readonly TodoContext _context;
-
-    public TodoItemsController(TodoContext context)
-    {
-        _context = context;
-    }
+    private readonly string _connectionString = "Data Source=meubanco.db";
 
     // GET: api/TodoItems
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetTodoItems()
     {
-        return await _context.TodoItems
-            .Select(x => ItemToDTO(x))
-            .ToListAsync();
+
+        using var connection = new SqliteConnection(_connectionString);
+
+        var sql = @"SELECT * FROM TodoItems";
+
+        var items = await connection.QueryAsync<TodoItem>(sql);
+
+        return items.Select(ItemToDTO).ToList();
+
     }
 
     // GET: api/TodoItems/5
@@ -29,14 +31,18 @@ public class TodoItemsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoItemDTO>> GetTodoItem(long id)
     {
-        var todoItem = await _context.TodoItems.FindAsync(id);
+        using var connection = new SqliteConnection(_connectionString);
 
-        if (todoItem == null)
+        var sql = @"SELECT * FROM TodoItems WHERE Id = @Id" ;
+
+        var item = await connection.QueryFirstOrDefaultAsync<TodoItem>(sql, new{ Id = id});
+
+        if (item == null)
         {
-            return NotFound();
+        return NotFound();
         }
 
-        return ItemToDTO(todoItem);
+        return ItemToDTO(item);
     }
     // </snippet_GetByID>
 
@@ -47,27 +53,15 @@ public class TodoItemsController : ControllerBase
     public async Task<IActionResult> PutTodoItem(long id, TodoItemDTO todoDTO)
     {
         if (id != todoDTO.Id)
-        {
             return BadRequest();
-        }
 
-        var todoItem = await _context.TodoItems.FindAsync(id);
-        if (todoItem == null)
-        {
+        using var connection = new SqliteConnection(_connectionString);
+        var affected = await connection.ExecuteAsync(
+            "UPDATE TodoItems SET Name = @Name, IsComplete = @IsComplete WHERE Id = @Id",
+            new { todoDTO.Name, todoDTO.IsComplete, todoDTO.Id });
+
+        if (affected == 0)
             return NotFound();
-        }
-
-        todoItem.Name = todoDTO.Name;
-        todoItem.IsComplete = todoDTO.IsComplete;
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException) when (!TodoItemExists(id))
-        {
-            return NotFound();
-        }
 
         return NoContent();
     }
@@ -79,19 +73,17 @@ public class TodoItemsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TodoItemDTO>> PostTodoItem(TodoItemDTO todoDTO)
     {
-        var todoItem = new TodoItem
-        {
-            IsComplete = todoDTO.IsComplete,
-            Name = todoDTO.Name
-        };
+        using var connection = new SqliteConnection(_connectionString);
 
-        _context.TodoItems.Add(todoItem);
-        await _context.SaveChangesAsync();
+        var sql = @"INSERT INTO TodoItems(Name, IsComplete)
+         VALUES(@Name, @IsComplete);
+         SELECT last_insert_rowid();";
 
-        return CreatedAtAction(
-            nameof(GetTodoItem),
-            new { id = todoItem.Id },
-            ItemToDTO(todoItem));
+        var id = await connection.ExecuteScalarAsync<long>(sql, new { todoDTO.Name, todoDTO.IsComplete });
+
+        todoDTO.Id = id;
+
+        return CreatedAtAction(nameof(GetTodoItem), new { id }, todoDTO);
     }
     // </snippet_Create>
 
@@ -99,28 +91,23 @@ public class TodoItemsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTodoItem(long id)
     {
-        var todoItem = await _context.TodoItems.FindAsync(id);
-        if (todoItem == null)
-        {
+        using var connection = new SqliteConnection(_connectionString);
+
+        var sql = @"DELETE FROM TodoItems WHERE Id = @Id";
+
+        var affected = await connection.ExecuteAsync(sql, new { Id = id });
+
+        if (affected == 0)
             return NotFound();
-        }
-
-        _context.TodoItems.Remove(todoItem);
-        await _context.SaveChangesAsync();
-
+            
         return NoContent();
     }
 
-    private bool TodoItemExists(long id)
-    {
-        return _context.TodoItems.Any(e => e.Id == id);
-    }
-
     private static TodoItemDTO ItemToDTO(TodoItem todoItem) =>
-       new TodoItemDTO
-       {
-           Id = todoItem.Id,
-           Name = todoItem.Name,
-           IsComplete = todoItem.IsComplete
-       };
+        new TodoItemDTO
+        {
+            Id = todoItem.Id,
+            Name = todoItem.Name,
+            IsComplete = todoItem.IsComplete
+        };
 }
