@@ -7,9 +7,9 @@ O desenvolvimento seguiu o tutorial oficial da Microsoft:
 📚 Tutorial: Criar uma API Web baseada em controlador com ASP.NET Core  
 Autores: Tim Deschryver e Rick Anderson  
 Data: 02/04/2025  
-🔗 Link para o tutorial
+🔗 [Link para o tutorial](https://learn.microsoft.com/pt-br/aspnet/core/tutorials/first-web-api?view=aspnetcore-9.0&tabs=visual-studio-code)
 
-🎯 Objetivo  
+## 🎯 Objetivo  
 Este projeto foi desenvolvido como um exercício prático para aprimorar minha compreensão de C# e da plataforma .NET, com foco em:
 
 - Criação de APIs RESTful usando ASP.NET Core  
