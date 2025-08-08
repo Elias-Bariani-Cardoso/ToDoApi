@@ -4,39 +4,47 @@ Este projeto é uma API Web simples criada com ASP.NET Core, utilizando o padrã
 
 O desenvolvimento seguiu o tutorial oficial da Microsoft:
 
-📚 **Tutorial: Criar uma API Web baseada em controlador com ASP.NET Core**  
-Autores: *Tim Deschryver* e *Rick Anderson*  
+📚 Tutorial: Criar uma API Web baseada em controlador com ASP.NET Core  
+Autores: Tim Deschryver e Rick Anderson  
 Data: 02/04/2025  
-🔗 [Link para o tutorial](https://learn.microsoft.com/pt-br/aspnet/core/tutorials/first-web-api?view=aspnetcore-9.0&tabs=visual-studio-code)
+🔗 Link para o tutorial
 
-## 🎯 Objetivo
+🎯 Objetivo  
+Este projeto foi desenvolvido como um exercício prático para aprimorar minha compreensão de C# e da plataforma .NET, com foco em:
 
-Este projeto foi desenvolvido como um **exercício prático para aprimorar minha compreensão de C# e da plataforma .NET**, com foco em:
-
-- Criação de APIs RESTful usando ASP.NET Core
-- Estruturação de um projeto com boas práticas
-- Uso de Entity Framework Core para persistência de dados
+- Criação de APIs RESTful usando ASP.NET Core  
+- Estruturação de um projeto com boas práticas  
+- Uso de Entity Framework Core para persistência de dados  
 - Utilização do scaffolding com dotnet-aspnet-codegenerator
+
+---
+
+## Evolução do projeto
+
+Após a fase inicial utilizando Entity Framework Core com banco em memória, o projeto foi refatorado para:
+
+- Substituir EF Core por SQLite como banco de dados leve e persistente localmente  
+- Utilizar Dapper, uma micro-ORM simples e performática, para operações CRUD com SQL direto  
+- Criar e configurar a tabela SQLite diretamente no `Program.cs`  
+- Adaptar os controllers para usar SQLite com Dapper, eliminando a dependência do DbContext  
+- Implementar CRUD completo (`GET`, `POST`, `PUT`, `DELETE`) com consultas SQL e Dapper  
+- Manter documentação via Swagger/OpenAPI para testes interativos  
 
 ---
 
 ## 🚀 Como executar o projeto
 
-### ✅ Pré-requisitos
-
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- Um editor como [Visual Studio Code](https://code.visualstudio.com/) (opcional)
+✅ Pré-requisitos  
+- .NET 9 SDK  
+- Um editor como Visual Studio Code (opcional)  
 - PowerShell, CMD ou terminal Bash
 
----
+⚙️ Configuração e execução  
+Clonar o repositório:
 
-### ⚙️ Configuração e execução
+git clone https://github.com/seu-usuario/TodoApi.git
+cd TodoApi
 
-1. **Clonar o repositório**:
-
-   ```bash
-   git clone https://github.com/seu-usuario/TodoApi.git
-   cd TodoApi
 
 2. **Restaurar dependências e compilar**:
 
@@ -61,9 +69,8 @@ Este projeto foi desenvolvido como um **exercício prático para aprimorar minha
 **Principais pacotes NuGet**
 
 - Microsoft.AspNetCore.App (metapackage incluído no SDK)
-- Microsoft.EntityFrameworkCore (v9.0.0)
-- Microsoft.EntityFrameworkCore.SqlServer (v9.0.0)
-- Microsoft.VisualStudio.Web.CodeGeneration.Design (v9.0.0)
+- Microsoft.Data.Sqlite
+- Dapper
 
 **Ferramentas CLI**
 
@@ -73,7 +80,7 @@ Este projeto foi desenvolvido como um **exercício prático para aprimorar minha
 
 ### 🧠 Conhecimentos adquiridos
  
-- Desenvolvimento Backend
+- Desenvolvimento Backend com ASP.NET Core
 - Criação de controllers via scaffolding
 - Configuração de serviços no Program.cs
 - Mapeamento de rotas convencionais
@@ -96,10 +103,15 @@ Propósito educacional: Este projeto foi criado exclusivamente para fins de apre
 **Limitações**: 
 
 Não inclui:
-- Autenticação/autorização
-- Validação robusta de dados
-- Tratamento avançado de erros
-- Testes automatizados
+📌 Considerações importantes
+Propósito educacional: Este projeto foi criado exclusivamente para fins de aprendizado.
+
+Limitações:
+- Não inclui autenticação ou autorização
+- Não possui validação robusta de dados
+- Não implementa tratamento avançado de erros
+- Não possui testes automatizados
+- Banco de dados SQLite local simples, sem migrações sofisticadas
 
 **Banco de dados**: 
     Utiliza um banco em memória para simplificar a execução.
